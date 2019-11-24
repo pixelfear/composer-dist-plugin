@@ -39,7 +39,7 @@ For example, [this workflow](examples/github-workflow.yml) will do the following
 - Compile assets using Laravel Mix
 - Create a tar.gz archive
 - Create a GitHub release
-- Upload the tar to the release
+- Upload the tar to release assets
 
 Of course, this means that archives will only exist for tagged releases. If you are installating a package using a branch like dev-master, the zip will 404. In this case you can manually compile your assets locally.
 
