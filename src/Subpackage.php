@@ -30,7 +30,9 @@ class Subpackage extends Package
 
         if (preg_match('/\.zip$/', $filename)) {
             return 'zip';
-        } elseif (preg_match('/\.(tar\.gz|tgz)$/', $filename)) {
+        }
+
+        if (preg_match('/\.(tar\.gz|tgz)$/', $filename)) {
             return 'tar';
         }
 
