@@ -32,7 +32,7 @@ This plugin only downloads and extracts an existing zip from a URL. You will nee
 
 A good solution for this could be using a GitHub Actions workflow.
 
-For example, [this workflow]() will do the following steps whenever you push a tag starting with `v`:
+For example, [this workflow](examples/github-workflow.yml) will do the following steps whenever you push a tag starting with `v`:
 
 - Checkout your code using Git
 - Run npm install
