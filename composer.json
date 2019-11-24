@@ -1,0 +1,19 @@
+{
+    "name": "pixelfear/composer-dist-plugin",
+    "type": "composer-plugin",
+    "description": "Downloads distributable assets to be used in packages so you don't have to commit them.",
+    "require": {
+        "composer-plugin-api": "^1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.4"
+    },
+    "extra": {
+        "class": "Pixelfear\\ComposerDistPlugin\\Plugin"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pixelfear\\ComposerDistPlugin\\": "src/"
+        }
+    }
+}
