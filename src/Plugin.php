@@ -39,7 +39,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         $config = (new ConfigNormalizer)->normalize($extra['download-dist']);
 
-        foreach ($config as $bundle) {
+        foreach ($config['bundles'] as $bundle) {
             $this->downloadBundle($package, $bundle);
         }
     }
