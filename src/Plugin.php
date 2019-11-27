@@ -25,6 +25,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         return [
             PackageEvents::POST_PACKAGE_INSTALL => 'download',
+            PackageEvents::POST_PACKAGE_UPDATE => 'download',
         ];
     }
 
