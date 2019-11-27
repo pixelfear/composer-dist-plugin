@@ -24,14 +24,23 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            PackageEvents::POST_PACKAGE_INSTALL => 'download',
-            PackageEvents::POST_PACKAGE_UPDATE => 'download',
+            PackageEvents::POST_PACKAGE_INSTALL => 'downloadInstall',
+            PackageEvents::POST_PACKAGE_UPDATE => 'downloadUpdate',
         ];
     }
 
-    public function download(PackageEvent $event)
+    public function downloadInstall(PackageEvent $event)
     {
-        $package = $event->getOperation()->getPackage();
+        $this->download($event->getOperation()->getPackage());
+    }
+
+    public function downloadUpdate(PackageEvent $event)
+    {
+        $this->download($event->getOperation()->getTargetPackage());
+    }
+
+    protected function download($package)
+    {
         $extra = $package->getExtra();
 
         if (! isset($extra['download-dist'])) {
