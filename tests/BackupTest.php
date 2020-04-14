@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests;
+
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use Pixelfear\ComposerDistPlugin\Backup;

@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests;
+
 use PHPUnit\Framework\TestCase;
 use Pixelfear\ComposerDistPlugin\ConfigNormalizer;
 
