@@ -9,16 +9,19 @@ use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
+use Composer\Util\Filesystem;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
     protected $composer;
     protected $io;
+    protected $files;
 
     public function activate(Composer $composer, IOInterface $io)
     {
         $this->composer = $composer;
         $this->io = $io;
+        $this->files = new Filesystem;
     }
 
     public static function getSubscribedEvents()
@@ -61,6 +64,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         $path = $installer->getInstallPath($package) . '/' . ($config['path'] ?? 'dist');
 
+        // The downloader will delete the directory in order to unzip the file.
+        // https://github.com/composer/composer/blob/88cff792cc6f2fa4df736e9abb612b955b783087/src/Composer/Downloader/FileDownloader.php#L123
+        // If the download fails, the existing directory will be gone. We'll back it up and restore
+        // when there's an error. If devs expect a failure and manually created or linked the
+        // directory (eg. when working on a master branch), at least they won't lose it.
+        $backupPath = $this->backupDirectory($path);
+
         $url = strtr($config['url'], [
             '{$version}' => $version = $package->getPrettyVersion()
         ]);
@@ -70,6 +80,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         try {
             $downloadManager->download($subpackage, $path);
         } catch (TransportException $e) {
+            $this->restoreBackup($backupPath, $path);
+
             // Allow failures when referencing a branch.
             // Users will likely be developing and be okay with manually compiling files.
             // We assume that tagged releases will exist and not 404.
@@ -78,6 +90,33 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             } else {
                 throw $e;
             }
+        } finally {
+            $this->deleteBackup($backupPath);
+        }
+    }
+
+    protected function backupDirectory($path)
+    {
+        if (! file_exists($path)) {
+            return false;
+        }
+
+        $this->files->copy($path, $backupPath = $path . '-bak-' . substr(md5(uniqid('', true)), 0, 8));
+
+        return $backupPath;
+    }
+
+    protected function restoreBackup($backupPath, $path)
+    {
+        if ($backupPath) {
+            $this->files->copy($backupPath, $path);
+        }
+    }
+
+    protected function deleteBackup($backupPath)
+    {
+        if ($backupPath) {
+            $this->files->remove($backupPath);
         }
     }
 }
