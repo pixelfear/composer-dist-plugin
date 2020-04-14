@@ -9,7 +9,6 @@ use Composer\Installer\PackageEvent;
 use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
-use Composer\Util\Filesystem;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
@@ -21,7 +20,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         $this->composer = $composer;
         $this->io = $io;
-        $this->files = new Filesystem;
     }
 
     public static function getSubscribedEvents()
@@ -69,7 +67,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         // If the download fails, the existing directory will be gone. We'll back it up and restore
         // when there's an error. If devs expect a failure and manually created or linked the
         // directory (eg. when working on a master branch), at least they won't lose it.
-        $backupPath = $this->backupDirectory($path);
+        $backup = Backup::of($path)->create();
 
         $url = strtr($config['url'], [
             '{$version}' => $version = $package->getPrettyVersion()
@@ -80,7 +78,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         try {
             $downloadManager->download($subpackage, $path);
         } catch (TransportException $e) {
-            $this->restoreBackup($backupPath, $path);
+            $backup->restore();
 
             // Allow failures when referencing a branch.
             // Users will likely be developing and be okay with manually compiling files.
@@ -91,32 +89,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 throw $e;
             }
         } finally {
-            $this->deleteBackup($backupPath);
-        }
-    }
-
-    protected function backupDirectory($path)
-    {
-        if (! file_exists($path)) {
-            return false;
-        }
-
-        $this->files->copy($path, $backupPath = $path . '-bak-' . substr(md5(uniqid('', true)), 0, 8));
-
-        return $backupPath;
-    }
-
-    protected function restoreBackup($backupPath, $path)
-    {
-        if ($backupPath) {
-            $this->files->copy($backupPath, $path);
-        }
-    }
-
-    protected function deleteBackup($backupPath)
-    {
-        if ($backupPath) {
-            $this->files->remove($backupPath);
+            $backup->delete();
         }
     }
 }

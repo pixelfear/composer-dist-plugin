@@ -6,7 +6,9 @@
         "composer-plugin-api": "^1.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.4"
+        "phpunit/phpunit": "^8.4",
+        "mockery/mockery": "^1.3",
+        "composer/composer": "^1.10"
     },
     "extra": {
         "class": "Pixelfear\\ComposerDistPlugin\\Plugin"
