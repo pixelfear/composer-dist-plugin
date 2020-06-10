@@ -58,7 +58,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     protected function downloadBundle($package, $config)
     {
         $installer = $this->composer->getInstallationManager();
-        $downloadManager = $this->composer->getDownloadManager();
 
         $path = $installer->getInstallPath($package) . '/' . ($config['path'] ?? 'dist');
 
@@ -69,6 +68,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         // directory (eg. when working on a master branch), at least they won't lose it.
         $backup = Backup::of($path)->create();
 
+        (new Filesystem)->remove($path);
+
         $url = strtr($config['url'], [
             '{$version}' => $version = $package->getPrettyVersion()
         ]);
@@ -76,7 +77,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $subpackage = new Subpackage($package, $config['name'], $url);
 
         try {
-            $downloadManager->download($subpackage, $path);
+            $this->attemptDownload($subpackage, $path);
         } catch (TransportException $e) {
             $backup->restore();
 
@@ -84,12 +85,49 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             // Users will likely be developing and be okay with manually compiling files.
             // We assume that tagged releases will exist and not 404.
             if (strpos($version, 'dev-') === 0) {
-                $this->io->write('');
+                $this->writeDownloadFailedError($subpackage, $url);
             } else {
                 throw $e;
             }
         } finally {
             $backup->delete();
         }
+    }
+
+    public function deactivate(Composer $composer, IOInterface $io): void
+    {
+        //
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io): void
+    {
+        //
+    }
+
+    private function attemptDownload(Subpackage $package, string $path)
+    {
+        $downloadManager = $this->composer->getDownloadManager();
+
+        if ($this->usingComposerTwo()) {
+            $loop = $this->composer->getLoop();
+            $loop->wait([$downloadManager->download($package, $path)]);
+            $loop->wait([$downloadManager->install($package, $path)]);
+        } else {
+            $downloadManager->download($package, $path);
+        }
+    }
+
+    private function writeDownloadFailedError(Subpackage $package, string $url)
+    {
+        if ($this->usingComposerTwo()) {
+            $this->io->writeError('    <error>Failed to download</error>');
+        } else {
+            $this->io->write(''); // Composer v1 already shows "failed" in red.
+        }
+    }
+
+    private function usingComposerTwo(): bool
+    {
+        return strpos(PluginInterface::PLUGIN_API_VERSION, '2') === 0;
     }
 }
