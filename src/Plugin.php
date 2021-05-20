@@ -84,7 +84,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             // Allow failures when referencing a branch.
             // Users will likely be developing and be okay with manually compiling files.
             // We assume that tagged releases will exist and not 404.
-            if (preg_match('/^dev-/', $version) || preg_match('/.x-dev$/', $version)) {
+            if (preg_match('/^dev-/', $version) || preg_match('/\.x-dev$/', $version)) {
                 $this->writeDownloadFailedError($subpackage, $url);
             } else {
                 throw $e;
