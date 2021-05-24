@@ -2,6 +2,7 @@
     "name": "pixelfear/composer-dist-plugin",
     "type": "composer-plugin",
     "description": "Downloads distributable assets to be used in packages so you don't have to commit them.",
+    "license": "MIT",
     "require": {
         "composer-plugin-api": "^1.1 || ^2.0"
     },
