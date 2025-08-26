@@ -4,7 +4,7 @@
     "description": "Downloads distributable assets to be used in packages so you don't have to commit them.",
     "license": "MIT",
     "require": {
-        "composer-plugin-api": "^1.1 || ^2.0"
+        "composer-plugin-api": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.4",
