@@ -1,5 +1,7 @@
 # Composer Dist Plugin
 
+bump
+
 A [Composer](https://getcomposer.org) plugin that allows zip files containing distributable assets to be downloaded and extracted within a package's directory when it's installed.
 
 Useful for packages that need to ship compiled css/js files but don't want to track them within git.
